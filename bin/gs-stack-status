@@ -402,6 +402,10 @@ if [[ -n "$repo_owner" && ${#pr_number_to_branch[@]} -gt 0 ]]; then
       (.commits.nodes[0].commit.statusCheckRollup // null) |
       if . == null then "NO_CI"
       else
+        # Capture rollup-level state for cases where checks haven't been
+        # created yet (e.g., queued workflow jobs). The rollup knows CI is
+        # pending even when no individual PENDING check nodes exist.
+        (.state // "UNKNOWN") as $rollup_state |
         (.contexts.nodes // []) as $nodes |
         ($nodes | map(select(. != null))) as $all_valid |
         # Deduplicate: GitHub returns stale check runs from older workflow
@@ -448,7 +452,7 @@ if [[ -n "$repo_owner" && ${#pr_number_to_branch[@]} -gt 0 ]]; then
             .cState != null and (.cState | IN("FAILURE", "ERROR"))
           )) | length) as $sc_failed |
 
-          (($cr_running + $sc_running) > 0) as $any_running |
+          (($cr_running + $sc_running) > 0 or ($rollup_state | IN("PENDING", "EXPECTED"))) as $any_running |
           (($cr_failed + $sc_failed) > 0) as $any_failed |
 
           if $any_running and $any_failed then
