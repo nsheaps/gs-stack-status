@@ -222,12 +222,14 @@ fi
 if [[ "$USE_COLOR" -eq 1 ]]; then
   BOLD=$'\033[1m'
   BOLD_YELLOW=$'\033[1;33m'
+  GREEN=$'\033[0;32m'
   RED=$'\033[0;31m'
   BOLD_MAGENTA=$'\033[1;35m'
   RESET=$'\033[0m'
 else
   BOLD=""
   BOLD_YELLOW=""
+  GREEN=""
   RED=""
   BOLD_MAGENTA=""
   RESET=""
@@ -901,6 +903,10 @@ if [[ "$OUTPUT_FORMAT" == "osc8" ]]; then
 
       if [[ "$current" -eq 1 ]]; then
         printf '%s%s%s%s%s\n' "$BOLD_YELLOW" "$osc_open" "$visible_text" "$osc_close" "$RESET"
+      elif [[ "${pr_state[$branch]}" == "MERGED" ]]; then
+        printf '%s%s%s%s%s\n' "$GREEN" "$osc_open" "$visible_text" "$osc_close" "$RESET"
+      elif [[ "${pr_state[$branch]}" == "CLOSED" ]]; then
+        printf '%s%s%s%s%s\n' "$RED" "$osc_open" "$visible_text" "$osc_close" "$RESET"
       else
         printf '%s%s%s\n' "$osc_open" "$visible_text" "$osc_close"
       fi
@@ -1064,7 +1070,10 @@ for cleaned in "${cleaned_lines[@]}"; do
     if [[ "$current" -eq 1 ]]; then
       printf '%s%s%s\n' "$BOLD_YELLOW" "$output_line" "$RESET"
       printf '%s%s%s\n' "$BOLD_YELLOW" "$url_line" "$RESET"
-    elif [[ "${pr_state[$branch]}" == "CLOSED" || "${pr_state[$branch]}" == "MERGED" ]]; then
+    elif [[ "${pr_state[$branch]}" == "MERGED" ]]; then
+      printf '%s%s%s\n' "$GREEN" "$output_line" "$RESET"
+      printf '%s%s%s\n' "$GREEN" "$url_line" "$RESET"
+    elif [[ "${pr_state[$branch]}" == "CLOSED" ]]; then
       printf '%s%s%s\n' "$RED" "$output_line" "$RESET"
       printf '%s%s%s\n' "$RED" "$url_line" "$RESET"
     else
