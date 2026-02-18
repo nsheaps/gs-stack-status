@@ -1,0 +1,18 @@
+[tools]
+node = "lts"
+yarn = "4"
+
+[tasks.lint]
+description = "Check shell scripts for syntax errors"
+run = """
+for script in bin/*; do
+  [ -d "$script" ] && continue
+  echo "Checking $script..."
+  bash -n "$script"
+done
+echo "All scripts passed syntax check."
+"""
+
+[tasks.test]
+description = "Run tests"
+run = "echo 'No tests configured yet'"
