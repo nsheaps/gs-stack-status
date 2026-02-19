@@ -34,6 +34,7 @@ TRUNCATE_BRANCH=35        # Default: truncate branch names to 35 chars
 TRUNCATE_PR_TITLE=0       # Default: no PR title truncation (0 = disabled)
 ONLY_REQUIRED_CI=1        # Default: CI status only reflects required checks
 SHOW_ALL=0                # Default: --show-in-progress (hide merged/closed PRs)
+TERM_COLS="${COLUMNS:-$(tput cols 2>/dev/null || echo 0)}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -925,6 +926,20 @@ if [[ "$OUTPUT_FORMAT" == "osc8" ]]; then
       pad_str=$(printf '%*s' "$padding" '')
       pr_num_display=$(printf '%*s' "$max_pr_num_width" "#${pr_num}")
 
+      # Terminal-width-aware title truncation
+      if [[ "$TERM_COLS" -gt 0 ]]; then
+        if [[ "$SHOW_STATUS" -eq 1 ]]; then
+          # prefix = col1 + pad + review(2col) + ci(2col) + " " + pr_num + "  "
+          prefix_width=$((col2_start + 4 + 1 + max_pr_num_width + 2))
+        else
+          prefix_width=$((col2_start + max_pr_num_width + 2))
+        fi
+        max_title_width=$((TERM_COLS - prefix_width))
+        if [[ "$max_title_width" -gt 3 ]]; then
+          title=$(truncate_str "$title" "$max_title_width")
+        fi
+      fi
+
       if [[ "$SHOW_STATUS" -eq 1 ]]; then
         review="${pr_review[$branch]}"
         ci="${pr_ci[$branch]}"
@@ -1081,6 +1096,20 @@ for cleaned in "${cleaned_lines[@]}"; do
 
     # Right-align PR number within its column
     pr_num_display=$(printf '%*s' "$max_pr_num_width" "#${pr_num}")
+
+    # Terminal-width-aware title truncation
+    if [[ "$TERM_COLS" -gt 0 ]]; then
+      if [[ "$SHOW_STATUS" -eq 1 ]]; then
+        # prefix = col1 + pad + review(2col) + ci(2col) + " " + pr_num + "  "
+        prefix_width=$((col2_start + 4 + 1 + max_pr_num_width + 2))
+      else
+        prefix_width=$((col2_start + max_pr_num_width + 2))
+      fi
+      max_title_width=$((TERM_COLS - prefix_width))
+      if [[ "$max_title_width" -gt 3 ]]; then
+        title=$(truncate_str "$title" "$max_title_width")
+      fi
+    fi
 
     if [[ "$SHOW_STATUS" -eq 1 ]]; then
       review="${pr_review[$branch]}"
