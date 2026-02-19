@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.0](https://github.com/nsheaps/gs-stack-status/compare/v0.1.0...v0.2.0) (2026-02-19)
+
+### Features
+
+* simplify visibility flags to --show-in-progress/--show-all ([7dd314f](https://github.com/nsheaps/gs-stack-status/commit/7dd314fea2b680382885d8fe1dce2e29a07af9a7))
+
 ## [0.1.0](https://github.com/nsheaps/gs-stack-status/compare/v0.0.1...v0.1.0) (2026-02-19)
 
 ### Features
