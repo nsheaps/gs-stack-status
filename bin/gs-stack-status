@@ -33,7 +33,8 @@ WATCH_INTERVAL=10
 TRUNCATE_BRANCH=35        # Default: truncate branch names to 35 chars
 TRUNCATE_PR_TITLE=0       # Default: no PR title truncation (0 = disabled)
 ONLY_REQUIRED_CI=1        # Default: CI status only reflects required checks
-INCLUDE_CLOSED=0          # Default: hide closed/merged PRs
+SHOW_MERGED=0             # Default: hide merged PRs
+SHOW_CLOSED=0             # Default: hide closed PRs
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -98,12 +99,12 @@ while [[ $# -gt 0 ]]; do
       ONLY_REQUIRED_CI=0
       shift
       ;;
-    --include-closed)
-      INCLUDE_CLOSED=1
+    --show-merged)
+      SHOW_MERGED=1
       shift
       ;;
-    --no-include-closed)
-      INCLUDE_CLOSED=0
+    --show-closed)
+      SHOW_CLOSED=1
       shift
       ;;
     --truncate-branch-length)
@@ -139,8 +140,8 @@ while [[ $# -gt 0 ]]; do
       echo "  --watch [SECS]    Refresh in-place every SECS seconds (default: 10)"
       echo "  --only-required-ci          CI status reflects only required checks (default)"
       echo "  --no-only-required-ci       CI status reflects all checks"
-      echo "  --include-closed            Show closed/merged PRs (default: hidden)"
-      echo "  --no-include-closed         Hide closed/merged PRs (default)"
+      echo "  --show-merged               Show merged PRs (default: hidden)"
+      echo "  --show-closed               Show closed PRs (default: hidden)"
       echo "  --truncate-branch-length N  Truncate branch names to N chars (default: 35)"
       echo "  --truncate-pr-title N       Truncate PR titles to N chars (default: no limit)"
       echo "  -h, --help        Show this help message"
@@ -495,6 +496,13 @@ if [[ -n "$repo_owner" && ${#pr_number_to_branch[@]} -gt 0 ]]; then
     pr_review_raw["$branch"]="$review"
     pr_ci_raw["$branch"]="$ci"
     pr_state["$branch"]="$state"
+
+    # Override review/CI emoji for closed/merged PRs to show consistent ⛔️
+    # This keeps column alignment instead of prepending a shifting prefix
+    if [[ "$state" == "CLOSED" || "$state" == "MERGED" ]]; then
+      pr_review["$branch"]="$EMOJI_CLOSED"
+      pr_ci["$branch"]="$EMOJI_CLOSED"
+    fi
   done <<< "$lookup"
   fi  # end graphql_result guard
 fi
@@ -518,6 +526,37 @@ while IFS= read -r wt_line; do
 done < <(git worktree list --porcelain 2>/dev/null)
 
 # ---------------------------------------------------------------------------
+# Count hidden merged/closed PRs for summary line
+# ---------------------------------------------------------------------------
+hidden_merged=0
+hidden_closed=0
+for branch in "${!pr_state[@]}"; do
+  case "${pr_state[$branch]}" in
+    MERGED) [[ "$SHOW_MERGED" -eq 0 ]] && ((hidden_merged++)) || true ;;
+    CLOSED) [[ "$SHOW_CLOSED" -eq 0 ]] && ((hidden_closed++)) || true ;;
+  esac
+done
+
+# Print hidden PR summary line (called at end of each output format)
+print_hidden_summary() {
+  if (( hidden_merged > 0 || hidden_closed > 0 )); then
+    local summary="" flags=""
+    if (( hidden_merged > 0 )); then
+      summary="${hidden_merged} merged"
+      flags="--show-merged"
+    fi
+    if (( hidden_closed > 0 )); then
+      [[ -n "$summary" ]] && summary="${summary}, "
+      summary="${summary}${hidden_closed} closed"
+      [[ -n "$flags" ]] && flags="${flags}, "
+      flags="${flags}--show-closed"
+    fi
+    echo ""
+    echo "  ${summary} hidden — use ${flags} to display"
+  fi
+}
+
+# ---------------------------------------------------------------------------
 # Filtering logic
 # ---------------------------------------------------------------------------
 # Determine whether a branch should be filtered out based on --reviewed,
@@ -539,12 +578,13 @@ branch_passes_filter() {
     return 0
   fi
 
-  # Filter closed/merged PRs unless --include-closed
-  if [[ "$INCLUDE_CLOSED" -eq 0 ]]; then
-    local state="${pr_state[$branch]:-}"
-    if [[ "$state" == "CLOSED" || "$state" == "MERGED" ]]; then
-      return 1
-    fi
+  # Filter merged/closed PRs unless --show-merged / --show-closed
+  local state="${pr_state[$branch]:-}"
+  if [[ "$state" == "MERGED" && "$SHOW_MERGED" -eq 0 ]]; then
+    return 1
+  fi
+  if [[ "$state" == "CLOSED" && "$SHOW_CLOSED" -eq 0 ]]; then
+    return 1
   fi
 
   # No other filters active — show everything
@@ -738,17 +778,12 @@ for branch, depth, is_current in reversed(results):
       url="${pr_url[$branch]}"
       pr_num="${branch_to_pr_number[$branch]}"
 
-      closed_prefix=""
-      if [[ "${pr_state[$branch]}" == "CLOSED" || "${pr_state[$branch]}" == "MERGED" ]]; then
-        closed_prefix="${EMOJI_CLOSED} "
-      fi
-
       if [[ "$SHOW_STATUS" -eq 1 ]]; then
         review="${pr_review[$branch]}"
         ci="${pr_ci[$branch]}"
-        link_text="${closed_prefix}${review}${ci} #${pr_num} ${title}"
+        link_text="${review}${ci} #${pr_num} ${title}"
       else
-        link_text="${closed_prefix}#${pr_num} ${title}"
+        link_text="#${pr_num} ${title}"
       fi
 
       if [[ "$current" -eq 1 ]]; then
@@ -771,6 +806,8 @@ for branch, depth, is_current in reversed(results):
 
     echo "$md_line"
   done <<< "$gs_tree"
+
+  print_hidden_summary
 
   if [[ "$SHOW_STATUS" -eq 1 ]]; then
     echo ""
@@ -869,11 +906,6 @@ if [[ "$OUTPUT_FORMAT" == "osc8" ]]; then
       url="${pr_url[$branch]}"
       pr_num="${branch_to_pr_number[$branch]}"
 
-      closed_prefix=""
-      if [[ "${pr_state[$branch]}" == "CLOSED" || "${pr_state[$branch]}" == "MERGED" ]]; then
-        closed_prefix="${EMOJI_CLOSED} "
-      fi
-
       osc_open=$'\e]8;;'"${url}"$'\e\\'
       osc_close=$'\e]8;;\e\\'
 
@@ -886,9 +918,9 @@ if [[ "$OUTPUT_FORMAT" == "osc8" ]]; then
       if [[ "$SHOW_STATUS" -eq 1 ]]; then
         review="${pr_review[$branch]}"
         ci="${pr_ci[$branch]}"
-        visible_text="${cleaned}${pad_str}${closed_prefix}${review}${ci} ${pr_num_display}  ${title}"
+        visible_text="${cleaned}${pad_str}${review}${ci} ${pr_num_display}  ${title}"
       else
-        visible_text="${cleaned}${pad_str}${closed_prefix}${pr_num_display}  ${title}"
+        visible_text="${cleaned}${pad_str}${pr_num_display}  ${title}"
       fi
 
       # Colorize the worktree "+" indicator and branch name in bold magenta
@@ -921,6 +953,8 @@ if [[ "$OUTPUT_FORMAT" == "osc8" ]]; then
 
     line_idx=$((line_idx + 1))
   done
+
+  print_hidden_summary
 
   if [[ "$SHOW_STATUS" -eq 1 ]]; then
     echo ""
@@ -1029,11 +1063,6 @@ for cleaned in "${cleaned_lines[@]}"; do
     url="${pr_url[$branch]}"
     pr_num="${branch_to_pr_number[$branch]}"
 
-    closed_prefix=""
-    if [[ "$USE_COLOR" -eq 0 && ( "${pr_state[$branch]}" == "CLOSED" || "${pr_state[$branch]}" == "MERGED" ) ]]; then
-      closed_prefix="${EMOJI_CLOSED} "
-    fi
-
     # Pad column 1 (tree + branch)
     display_width=$(printf '%s' "$cleaned" | wc -m | tr -d ' ')
     [[ -n "${worktree_branches[$branch]+_}" ]] && (( display_width++ ))
@@ -1046,9 +1075,9 @@ for cleaned in "${cleaned_lines[@]}"; do
     if [[ "$SHOW_STATUS" -eq 1 ]]; then
       review="${pr_review[$branch]}"
       ci="${pr_ci[$branch]}"
-      output_line="${cleaned}${pad_str}${closed_prefix}${review}${ci} ${pr_num_display}  ${title}"
+      output_line="${cleaned}${pad_str}${review}${ci} ${pr_num_display}  ${title}"
     else
-      output_line="${cleaned}${pad_str}${closed_prefix}${pr_num_display}  ${title}"
+      output_line="${cleaned}${pad_str}${pr_num_display}  ${title}"
     fi
 
     # URL line indented under the branch name
@@ -1091,6 +1120,8 @@ for cleaned in "${cleaned_lines[@]}"; do
 
   line_idx=$((line_idx + 1))
 done
+
+print_hidden_summary
 
 # ---------------------------------------------------------------------------
 # Legend
