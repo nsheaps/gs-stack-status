@@ -33,8 +33,7 @@ WATCH_INTERVAL=10
 TRUNCATE_BRANCH=35        # Default: truncate branch names to 35 chars
 TRUNCATE_PR_TITLE=0       # Default: no PR title truncation (0 = disabled)
 ONLY_REQUIRED_CI=1        # Default: CI status only reflects required checks
-SHOW_MERGED=0             # Default: hide merged PRs
-SHOW_CLOSED=0             # Default: hide closed PRs
+SHOW_ALL=0                # Default: --show-in-progress (hide merged/closed PRs)
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -99,12 +98,12 @@ while [[ $# -gt 0 ]]; do
       ONLY_REQUIRED_CI=0
       shift
       ;;
-    --show-merged)
-      SHOW_MERGED=1
+    --show-all)
+      SHOW_ALL=1
       shift
       ;;
-    --show-closed)
-      SHOW_CLOSED=1
+    --show-in-progress)
+      SHOW_ALL=0
       shift
       ;;
     --truncate-branch-length)
@@ -140,8 +139,8 @@ while [[ $# -gt 0 ]]; do
       echo "  --watch [SECS]    Refresh in-place every SECS seconds (default: 10)"
       echo "  --only-required-ci          CI status reflects only required checks (default)"
       echo "  --no-only-required-ci       CI status reflects all checks"
-      echo "  --show-merged               Show merged PRs (default: hidden)"
-      echo "  --show-closed               Show closed PRs (default: hidden)"
+      echo "  --show-in-progress          Show only draft/open PRs (default)"
+      echo "  --show-all                  Show all PRs including merged and closed"
       echo "  --truncate-branch-length N  Truncate branch names to N chars (default: 35)"
       echo "  --truncate-pr-title N       Truncate PR titles to N chars (default: no limit)"
       echo "  -h, --help        Show this help message"
@@ -526,33 +525,45 @@ while IFS= read -r wt_line; do
 done < <(git worktree list --porcelain 2>/dev/null)
 
 # ---------------------------------------------------------------------------
-# Count hidden merged/closed PRs for summary line
+# Count hidden merged/closed PRs (with worktree counts) for summary line
 # ---------------------------------------------------------------------------
 hidden_merged=0
+hidden_merged_wt=0
 hidden_closed=0
-for branch in "${!pr_state[@]}"; do
-  case "${pr_state[$branch]}" in
-    MERGED) [[ "$SHOW_MERGED" -eq 0 ]] && ((hidden_merged++)) || true ;;
-    CLOSED) [[ "$SHOW_CLOSED" -eq 0 ]] && ((hidden_closed++)) || true ;;
-  esac
-done
+hidden_closed_wt=0
+if [[ "$SHOW_ALL" -eq 0 ]]; then
+  for branch in "${!pr_state[@]}"; do
+    case "${pr_state[$branch]}" in
+      MERGED)
+        ((hidden_merged++)) || true
+        [[ -n "${worktree_branches[$branch]+_}" ]] && ((hidden_merged_wt++)) || true
+        ;;
+      CLOSED)
+        ((hidden_closed++)) || true
+        [[ -n "${worktree_branches[$branch]+_}" ]] && ((hidden_closed_wt++)) || true
+        ;;
+    esac
+  done
+fi
 
 # Print hidden PR summary line (called at end of each output format)
 print_hidden_summary() {
   if (( hidden_merged > 0 || hidden_closed > 0 )); then
-    local summary="" flags=""
+    local parts=""
     if (( hidden_merged > 0 )); then
-      summary="${hidden_merged} merged"
-      flags="--show-merged"
+      parts="${hidden_merged}"
+      (( hidden_merged_wt > 0 )) && parts="${parts} (${hidden_merged_wt} wt)"
+      parts="${parts} merged"
     fi
     if (( hidden_closed > 0 )); then
-      [[ -n "$summary" ]] && summary="${summary}, "
-      summary="${summary}${hidden_closed} closed"
-      [[ -n "$flags" ]] && flags="${flags}, "
-      flags="${flags}--show-closed"
+      [[ -n "$parts" ]] && parts="${parts}, "
+      parts="${parts}${hidden_closed}"
+      (( hidden_closed_wt > 0 )) && parts="${parts} (${hidden_closed_wt} wt)"
+      parts="${parts} closed"
     fi
     echo ""
-    echo "  ${summary} hidden — use ${flags} to display"
+    echo "  Hidden: ${parts}."
+    echo "  Use --show-all to show all tracked branches regardless of state (default: --show-in-progress)"
   fi
 }
 
@@ -578,13 +589,12 @@ branch_passes_filter() {
     return 0
   fi
 
-  # Filter merged/closed PRs unless --show-merged / --show-closed
-  local state="${pr_state[$branch]:-}"
-  if [[ "$state" == "MERGED" && "$SHOW_MERGED" -eq 0 ]]; then
-    return 1
-  fi
-  if [[ "$state" == "CLOSED" && "$SHOW_CLOSED" -eq 0 ]]; then
-    return 1
+  # Filter merged/closed PRs unless --show-all
+  if [[ "$SHOW_ALL" -eq 0 ]]; then
+    local state="${pr_state[$branch]:-}"
+    if [[ "$state" == "MERGED" || "$state" == "CLOSED" ]]; then
+      return 1
+    fi
   fi
 
   # No other filters active — show everything
