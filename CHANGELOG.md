@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.1](https://github.com/nsheaps/gs-stack-status/compare/v0.3.0...v0.3.1) (2026-02-19)
+
+### Bug Fixes
+
+* revert terminal-width title truncation (too aggressive in v0.3.0) ([2ff4d34](https://github.com/nsheaps/gs-stack-status/commit/2ff4d34413243bcd6e254f2f7d8635a905127c6f))
+
 ## [0.3.0](https://github.com/nsheaps/gs-stack-status/compare/v0.2.0...v0.3.0) (2026-02-19)
 
 ### Features
