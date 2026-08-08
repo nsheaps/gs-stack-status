@@ -16,7 +16,7 @@ jobs:
       version: ${{ steps.release.outputs.version }}
       tag: ${{ steps.release.outputs.tag }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           fetch-depth: 0
 
@@ -31,7 +31,7 @@ jobs:
         run: git fetch --tags --force
 
       - name: Setup mise
-        uses: jdx/mise-action@v2
+        uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4
 
       - name: Install dependencies
         run: yarn install
@@ -65,13 +65,13 @@ jobs:
     needs: release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
 
       - name: Get job context
         id: context
-        uses: qoomon/actions--context@v4
+        uses: qoomon/actions--context@e12e182be797e3476990faf801dd1b87f107f91c # v5
 
       - name: Authenticate as GitHub App
         id: auth
