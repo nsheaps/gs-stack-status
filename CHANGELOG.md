@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.3](https://github.com/nsheaps/gs-stack-status/compare/v0.3.2...v0.3.3) (2026-08-09)
+
+### Maintenance
+
+* **deps:** update yarn to v4.17.1 ([#20](https://github.com/nsheaps/gs-stack-status/issues/20)) ([fc9c1aa](https://github.com/nsheaps/gs-stack-status/commit/fc9c1aac323f0f2514bfcb6b7ca46d024f3902d1))
+
 ## [0.3.2](https://github.com/nsheaps/gs-stack-status/compare/v0.3.1...v0.3.2) (2026-03-23)
 
 ## [0.3.1](https://github.com/nsheaps/gs-stack-status/compare/v0.3.0...v0.3.1) (2026-02-19)
