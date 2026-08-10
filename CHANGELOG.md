@@ -1,5 +1,7 @@
 # Changelog
 
+## [0.3.4](https://github.com/nsheaps/gs-stack-status/compare/v0.3.3...v0.3.4) (2026-08-10)
+
 ## [0.3.3](https://github.com/nsheaps/gs-stack-status/compare/v0.3.2...v0.3.3) (2026-08-09)
 
 ### Maintenance
