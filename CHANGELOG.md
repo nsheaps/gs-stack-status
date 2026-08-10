@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.6](https://github.com/nsheaps/gs-stack-status/compare/v0.3.5...v0.3.6) (2026-08-10)
+
+### Maintenance
+
+* **deps:** update github actions (major) ([#22](https://github.com/nsheaps/gs-stack-status/issues/22)) ([b782a78](https://github.com/nsheaps/gs-stack-status/commit/b782a78b0bf60b3f9bfb6ecec351bd68829a2b3c))
+
 ## [0.3.5](https://github.com/nsheaps/gs-stack-status/compare/v0.3.4...v0.3.5) (2026-08-10)
 
 ### Maintenance
