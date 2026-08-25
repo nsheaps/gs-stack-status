@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.12](https://github.com/nsheaps/gs-stack-status/compare/v0.3.11...v0.3.12) (2026-08-25)
+
+### Maintenance
+
+* **deps:** update dependency @release-it/conventional-changelog to v12 ([#29](https://github.com/nsheaps/gs-stack-status/issues/29)) ([411d739](https://github.com/nsheaps/gs-stack-status/commit/411d73976e9645d63faf744037c74afc9fbaec18)), references [#8203](https://github.com/nsheaps/gs-stack-status/issues/8203)
+
 ## [0.3.11](https://github.com/nsheaps/gs-stack-status/compare/v0.3.10...v0.3.11) (2026-08-21)
 
 ## [0.3.10](https://github.com/nsheaps/gs-stack-status/compare/v0.3.9...v0.3.10) (2026-08-14)
