@@ -235,6 +235,9 @@ else
   RESET=""
 fi
 
+# Terminal width for title truncation (0 = unknown/disabled)
+TERM_COLS="${COLUMNS:-$(tput cols 2>/dev/null || echo 0)}"
+
 # ---------------------------------------------------------------------------
 # Emoji constants
 # ---------------------------------------------------------------------------
@@ -933,6 +936,33 @@ if [[ "$OUTPUT_FORMAT" == "osc8" ]]; then
         visible_text="${cleaned}${pad_str}${pr_num_display}  ${title}"
       fi
 
+      # Terminal-width-aware title truncation: only truncate if the line would wrap
+      if [[ "$TERM_COLS" -gt 0 ]]; then
+        line_display_width=$(printf '%s' "$visible_text" | wc -m | tr -d ' ')
+        # Correct for characters that take 2 display columns but count as 1 char:
+        # - Fullwidth ＋ (worktree indicator)
+        [[ -n "${worktree_branches[$branch]+_}" ]] && (( line_display_width++ ))
+        # - Each emoji is 2 display columns but wc -m counts as 1 char
+        if [[ "$SHOW_STATUS" -eq 1 ]]; then
+          (( line_display_width += 2 ))  # review emoji + ci emoji = 2 extra columns
+        fi
+
+        if (( line_display_width > TERM_COLS )); then
+          excess=$(( line_display_width - TERM_COLS ))
+          max_title_len=$(( ${#title} - excess ))
+          if (( max_title_len < 3 )); then
+            max_title_len=3
+          fi
+          title=$(truncate_str "$title" "$max_title_len")
+          # Rebuild the line with the truncated title
+          if [[ "$SHOW_STATUS" -eq 1 ]]; then
+            visible_text="${cleaned}${pad_str}${review}${ci} ${pr_num_display}  ${title}"
+          else
+            visible_text="${cleaned}${pad_str}${pr_num_display}  ${title}"
+          fi
+        fi
+      fi
+
       # Colorize the worktree "+" indicator and branch name in bold magenta
       if [[ -n "${worktree_branches[$branch]+_}" ]]; then
         truncated_branch_osc=$(truncate_str "$branch" "$TRUNCATE_BRANCH")
@@ -1088,6 +1118,33 @@ for cleaned in "${cleaned_lines[@]}"; do
       output_line="${cleaned}${pad_str}${review}${ci} ${pr_num_display}  ${title}"
     else
       output_line="${cleaned}${pad_str}${pr_num_display}  ${title}"
+    fi
+
+    # Terminal-width-aware title truncation: only truncate if the line would wrap
+    if [[ "$TERM_COLS" -gt 0 ]]; then
+      line_display_width=$(printf '%s' "$output_line" | wc -m | tr -d ' ')
+      # Correct for characters that take 2 display columns but count as 1 char:
+      # - Fullwidth ＋ (worktree indicator)
+      [[ -n "${worktree_branches[$branch]+_}" ]] && (( line_display_width++ ))
+      # - Each emoji is 2 display columns but wc -m counts as 1 char
+      if [[ "$SHOW_STATUS" -eq 1 ]]; then
+        (( line_display_width += 2 ))  # review emoji + ci emoji = 2 extra columns
+      fi
+
+      if (( line_display_width > TERM_COLS )); then
+        excess=$(( line_display_width - TERM_COLS ))
+        max_title_len=$(( ${#title} - excess ))
+        if (( max_title_len < 3 )); then
+          max_title_len=3
+        fi
+        title=$(truncate_str "$title" "$max_title_len")
+        # Rebuild the line with the truncated title
+        if [[ "$SHOW_STATUS" -eq 1 ]]; then
+          output_line="${cleaned}${pad_str}${review}${ci} ${pr_num_display}  ${title}"
+        else
+          output_line="${cleaned}${pad_str}${pr_num_display}  ${title}"
+        fi
+      fi
     fi
 
     # URL line indented under the branch name
