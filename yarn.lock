@@ -651,7 +651,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"conventional-changelog-conventionalcommits@npm:^10.3.0":
+"conventional-changelog-conventionalcommits@npm:^10.4.0":
   version: 10.4.0
   resolution: "conventional-changelog-conventionalcommits@npm:10.4.0"
   dependencies:
@@ -972,7 +972,7 @@ __metadata:
   resolution: "gs-stack-status@workspace:."
   dependencies:
     "@release-it/conventional-changelog": "npm:^12.0.0"
-    conventional-changelog-conventionalcommits: "npm:^10.3.0"
+    conventional-changelog-conventionalcommits: "npm:^10.4.0"
     release-it: "npm:^21.0.2"
   languageName: unknown
   linkType: soft
