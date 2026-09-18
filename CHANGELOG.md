@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.18](https://github.com/nsheaps/gs-stack-status/compare/v0.3.17...v0.3.18) (2026-09-18)
+
+### Maintenance
+
+* **deps:** update dependency conventional-changelog-conventionalcommits to ^10.4.0 ([#35](https://github.com/nsheaps/gs-stack-status/issues/35)) ([abe4b40](https://github.com/nsheaps/gs-stack-status/commit/abe4b40a08d1855c5b991b2ac3d7e06d7d772d77))
+
 ## [0.3.17](https://github.com/nsheaps/gs-stack-status/compare/v0.3.16...v0.3.17) (2026-09-10)
 
 ### Maintenance
