@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.19](https://github.com/nsheaps/gs-stack-status/compare/v0.3.18...v0.3.19) (2026-10-01)
+
+### Maintenance
+
+* **deps:** update nsheaps/agents digest to dea197d ([#28](https://github.com/nsheaps/gs-stack-status/issues/28)) ([429dd1b](https://github.com/nsheaps/gs-stack-status/commit/429dd1baf78150f0fea446d3faa64aa117b4e443))
+
 ## [0.3.18](https://github.com/nsheaps/gs-stack-status/compare/v0.3.17...v0.3.18) (2026-09-18)
 
 ### Maintenance
