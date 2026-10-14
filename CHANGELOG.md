@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.20](https://github.com/nsheaps/gs-stack-status/compare/v0.3.19...v0.3.20) (2026-10-14)
+
+### Maintenance
+
+* **deps:** update nsheaps/agents digest to 45dd987 ([#36](https://github.com/nsheaps/gs-stack-status/issues/36)) ([f6eed43](https://github.com/nsheaps/gs-stack-status/commit/f6eed436a1cd6845e59469f148aae96112ff1646))
+
 ## [0.3.19](https://github.com/nsheaps/gs-stack-status/compare/v0.3.18...v0.3.19) (2026-10-01)
 
 ### Maintenance
