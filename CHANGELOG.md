@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.22](https://github.com/nsheaps/gs-stack-status/compare/v0.3.21...v0.3.22) (2026-10-18)
+
+### Maintenance
+
+* **deps:** update dependency release-it to ^21.1.0 ([#39](https://github.com/nsheaps/gs-stack-status/issues/39)) ([889292b](https://github.com/nsheaps/gs-stack-status/commit/889292ba92cc6f675fff7d24d9442b859a5db6fd))
+
 ## [0.3.21](https://github.com/nsheaps/gs-stack-status/compare/v0.3.20...v0.3.21) (2026-10-14)
 
 ### Maintenance
