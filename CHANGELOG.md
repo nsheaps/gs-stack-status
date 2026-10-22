@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.23](https://github.com/nsheaps/gs-stack-status/compare/v0.3.22...v0.3.23) (2026-10-22)
+
+### Maintenance
+
+* **deps:** update nsheaps/agents digest to 7929646 ([#38](https://github.com/nsheaps/gs-stack-status/issues/38)) ([3c9a594](https://github.com/nsheaps/gs-stack-status/commit/3c9a5945fd3b2b4a9f4814ceed59c725d88c868f))
+
 ## [0.3.22](https://github.com/nsheaps/gs-stack-status/compare/v0.3.21...v0.3.22) (2026-10-18)
 
 ### Maintenance
