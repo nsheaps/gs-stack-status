@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.25](https://github.com/nsheaps/gs-stack-status/compare/v0.3.24...v0.3.25) (2026-10-29)
+
+### Maintenance
+
+* **deps:** update jdx/mise-action action to v5 ([#42](https://github.com/nsheaps/gs-stack-status/issues/42)) ([4239fda](https://github.com/nsheaps/gs-stack-status/commit/4239fdadf9ab5370d2c034f26bd8f9fd0b48b752))
+
 ## [0.3.24](https://github.com/nsheaps/gs-stack-status/compare/v0.3.23...v0.3.24) (2026-10-24)
 
 ### Maintenance
